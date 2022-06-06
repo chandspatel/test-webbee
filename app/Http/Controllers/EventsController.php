@@ -8,6 +8,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Date;
+use App\Models\Workshop;
 
 class EventsController extends BaseController
 {
@@ -188,6 +189,17 @@ class EventsController extends BaseController
      */
 
     public function getFutureEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 2');
+
+        $getEventIds = Workshop::where('start', '>' , now())->groupBy('event_id')->pluck('event_id')->toArray();
+        $getEvents = Event::whereIn('id', $getEventIds)->get();
+
+        $eventWorkshop = [];
+        foreach ($getEvents as $eKey => $eventItem) {
+            $eventWorkshop[$eKey] = $eventItem->toArray();
+            $eventWorkshop[$eKey]['workshops'] = $eventItem->getWorkshop->toArray();
+        }
+
+        return \Response::json($eventWorkshop);
+
     }
 }
